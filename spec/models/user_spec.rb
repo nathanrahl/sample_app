@@ -12,10 +12,11 @@ require 'spec_helper'
 
 describe User do
 
-  before { @user = User.new(name: "Example User", email: "user@example.com",password: "foobar", password_confirmation: "foobar") }
+  before { @user = User.new(username: "exampleusername",name: "Example User", email: "user@example.com",password: "foobar", password_confirmation: "foobar") }
 
   subject { @user }
 
+  it { should respond_to(:username) }
   it { should respond_to(:name) }
   it { should respond_to(:email) }
   it { should respond_to(:password_digest) }
@@ -43,18 +44,32 @@ describe User do
     
     it { should be_admin }
   end
+
+  describe "when username is not present" do
+    before { @user.username = " " }
+    it { should_not be_valid }
+  end
+
   describe "when name is not present" do
     before { @user.name = " " }
     it { should_not be_valid }
   end
+
   describe "when email is not present" do
     before { @user.email = " " }
     it { should_not be_valid }
   end
+
+  describe "when username is too long" do
+    before { @user.username = "a" * 51 }
+    it { should_not be_valid }
+  end
+
   describe "when name is too long" do
     before { @user.name = "a" * 51 }
     it { should_not be_valid }
   end
+
   describe "when email format is invalid" do
     it "should be invalid" do
       addresses = %w[user@foo,com user_at_foo.org example.user@foo.
@@ -75,6 +90,17 @@ describe User do
       end      
     end
   end
+
+  describe "when username is already taken" do
+    before do
+      user_with_same_username = @user.dup
+      user_with_same_username.username = @user.username.upcase
+      user_with_same_username.save
+    end
+
+    it { should_not be_valid }
+  end
+
   describe "when email address is already taken" do
     before do
       user_with_same_email = @user.dup
@@ -84,10 +110,12 @@ describe User do
 
     it { should_not be_valid }
   end
+
   describe "when password is not present" do
     before { @user.password = @user.password_confirmation = " " }
     it { should_not be_valid }
   end
+
   describe "when password doesn't match confirmation" do
     before { @user.password_confirmation = "mismatch" }
     it { should_not be_valid }

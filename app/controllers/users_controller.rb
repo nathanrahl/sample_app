@@ -7,7 +7,11 @@ class UsersController < ApplicationController
   
   def show
     @user = User.find(params[:id])
-    @microposts = @user.microposts.paginate(page: params[:page])
+    if current_user?(@user)
+      @microposts = @user.microposts.paginate(page: params[:page])
+    else
+      @microposts = @user.microposts.no_replies.paginate(page: params[:page])
+    end
   end
   
   def new

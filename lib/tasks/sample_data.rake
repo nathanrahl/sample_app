@@ -12,18 +12,21 @@ def make_users
                        name: "Example User",
                        email: "example@railstutorial.org",
                        password: "foobar",
-                       password_confirmation: "foobar")
+                       password_confirmation: "foobar",
+                       confirmed_at: Time.now)
   admin.toggle!(:admin)
   99.times do |n|
     username = "#{Faker::Internet.user_name}_#{n}"
     name = Faker::Name.name
     email = "example-#{n+1}@railstutorial.org"
     password = "password"
+    confirmed_at = Time.now
     User.create!(username: username,
                  name: name,
                  email: email,
                  password: password,
-                 password_confirmation: password)
+                 password_confirmation: password,
+                 confirmed_at: confirmed_at)
   end
 end
 

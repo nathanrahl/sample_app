@@ -1,4 +1,6 @@
 SampleApp::Application.routes.draw do
+  match '/users/:id/confirm/:confirmation_token', to: 'users#confirm',
+                                                  :as => :confirm
   resources :users do
     member do
       get :following, :followers

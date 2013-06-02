@@ -219,6 +219,7 @@ DEPENDENCIES
   guard-rspec (= 1.2.1)
   guard-spork (= 1.2.0)
   jquery-rails (= 2.0.2)
+  mail
   pg (= 0.12.2)
   rails (= 3.2.11)
   rb-notifu (= 0.0.4)

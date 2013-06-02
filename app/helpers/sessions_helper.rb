@@ -8,6 +8,10 @@ module SessionsHelper
     !current_user.nil?
   end
 
+  def confirmed?
+    !current_user.nil? && ( current_user.confirmed_at != nil )
+  end
+
   def current_user=(user)
     @current_user = user
   end
@@ -24,6 +28,12 @@ module SessionsHelper
     unless signed_in?
       store_location
       redirect_to signin_url, notice: "Please sign in."
+    end
+  end
+
+  def confirmed_user 
+    unless confirmed?
+      redirect_to root_url, notice: "Please confirm your email address."
     end
   end
 

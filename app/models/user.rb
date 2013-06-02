@@ -9,7 +9,8 @@
 #  updated_at :datetime         not null
 #
 class User < ActiveRecord::Base
-  attr_accessible :username, :name, :email, :password, :password_confirmation
+  include TokenGeneratorHelper
+  attr_accessible :username, :name, :email, :password, :password_confirmation, :confirmed_at
   has_secure_password
   has_many :microposts, dependent: :destroy
   has_many :relationships, foreign_key: "follower_id", dependent: :destroy
@@ -21,7 +22,7 @@ class User < ActiveRecord::Base
 
   before_save { |user| user.username = username.downcase }
   before_save { |user| user.email = email.downcase }
-  before_save :create_remember_token
+  before_save :create_remember_token, :create_confirmation_token!
 
   validates :username, presence: true, length: { maximum: 50 },
                                        uniqueness: { case_sensitive: false }
@@ -49,10 +50,15 @@ class User < ActiveRecord::Base
     relationships.find_by_followed_id(other_user.id).destroy
   end
 
+  def create_confirmation_token!
+      self.confirmation_token = TokenGeneratorHelper.generate_confirmation_token
+  end
+
   private
     
     def create_remember_token
       self.remember_token = SecureRandom.urlsafe_base64
     end
+
 end
 

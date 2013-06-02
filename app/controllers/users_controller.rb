@@ -4,6 +4,8 @@ class UsersController < ApplicationController
                  only: [:index,:edit,:update,:destroy,:following,:followers]
   before_filter :correct_user, only: [:edit,:update]
   before_filter :admin_user, only: :destroy
+  before_filter :confirmed_user,
+                 only: [:index,:edit,:update,:destroy,:following,:followers]
   
   def show
     @user = User.find(params[:id])
@@ -21,9 +23,11 @@ class UsersController < ApplicationController
   def create
     @user = User.new(params[:user])
     if @user.save
-      sign_in @user
-      flash[:success] = "Welcome to the Sample App!"
-      redirect_to @user
+      UserMailer.registration_confirmation(@user).deliver
+      flash[:success] = "Account successfully created. Please confirm your
+                          account by clicking on the confirmation link sent
+                          at the email address you provided."
+      redirect_to root_url 
     else
       render 'new'
     end
@@ -37,10 +41,23 @@ class UsersController < ApplicationController
   end
 
   def update
-    if @user.update_attributes(params[:user])
-      flash[:success] = "Profile updated"
-      sign_in @user
-      redirect_to @user
+    @reconfirm = @user.email != params[:user][:email]
+    @user.attributes=(params[:user])
+
+    if @user.valid?
+      if @reconfirm
+        @user.update_attribute(:confirmed_at, nil)
+        UserMailer.registration_confirmation(@user).deliver
+        flash[:success] = "Please confirm your new email address by clicking on the confirmation link sent
+                          at the email address you provided."
+        sign_out
+        redirect_to root_url 
+      else
+        @user.update_attributes(params[:user])
+        flash[:success] = "Profile updated"
+        sign_in @user
+        redirect_to @user
+      end
     else
       render 'edit'
     end
@@ -66,6 +83,19 @@ class UsersController < ApplicationController
     render 'show_follow'
   end
 
+  def confirm
+    @user = User.find(params[:id])
+    if @user.confirmation_token == params[:confirmation_token]
+      @user.update_column(:confirmed_at, Time.now)
+      flash[:success] = "Your email address has been confirmed. Welcome to the Sample App!"
+      sign_in @user
+      redirect_to @user
+    else
+      flash[:notice] = "Invalid confirmation code"
+      redirect_to root_url
+    end
+  end
+
   private
 
     def correct_user
@@ -76,4 +106,5 @@ class UsersController < ApplicationController
     def admin_user
       redirect_to(root_path) unless current_user.admin?
     end
+
 end

@@ -1,0 +1,6 @@
+<%= @user.name %>,
+
+Thank you for registering!
+
+Please activate your profile by clicking on the following link:
+<%= confirm_url(@user.id,@user.confirmation_token) %>

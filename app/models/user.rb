@@ -51,7 +51,13 @@ class User < ActiveRecord::Base
   end
 
   def create_confirmation_token!
-      self.confirmation_token = TokenGeneratorHelper.generate_confirmation_token
+    self.confirmation_token = TokenGeneratorHelper.generate_token(:confirmation_token)
+  end
+
+  def send_password_reset
+    self.update_column( :password_reset_token , TokenGeneratorHelper.generate_token(:password_reset_token))
+    self.update_column( :password_reset_sent_at , Time.now)
+    UserMailer.password_reset(self).deliver
   end
 
   private

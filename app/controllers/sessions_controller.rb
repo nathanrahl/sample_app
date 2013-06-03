@@ -7,7 +7,7 @@ class SessionsController < ApplicationController
     user = User.find_by_email(params[:session][:email].downcase)
     if user && user.authenticate(params[:session][:password])
       if user.confirmed_at 
-        sign_in user
+        sign_in user, params[:remember_me]
         redirect_back_or user
       else
         flash.now[:notice] = 'Please confirm your email address.'
